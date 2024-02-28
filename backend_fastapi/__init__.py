@@ -1,4 +1,13 @@
 from .auth.views import router as auth_router
 from .home.views import router as home_router
 from .live.views import router as live_router
-from .stories.views import router as stories_router
+from .profile.views import router as profile_router
+from .chat.views import router as chat_router
+from .channel.views import router as channel_router
+from .game.views import router as game_router
+from .search.views import router as search_router
+from .history.views import router as history_router
+from .archive.views import router as archive_router
+from .wallet.views import router as wallet_router
+from .market.views import router as market_router
+from .group.views import router as group_router
