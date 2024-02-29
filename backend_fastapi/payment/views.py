@@ -2,11 +2,11 @@ from fastapi import APIRouter
 
 
 router = APIRouter(
-	prefix="/wallet",
-	tags=["wallet"]
+	prefix="/payment",
+	tags=["payment"]
 )
 
 
 @router.get("/")
 async def get_wallet():
-	return "default message from wallet"
+	return "default message from payment"

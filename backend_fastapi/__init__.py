@@ -7,7 +7,6 @@ from .channel.views import router as channel_router
 from .game.views import router as game_router
 from .search.views import router as search_router
 from .history.views import router as history_router
-from .archive.views import router as archive_router
-from .wallet.views import router as wallet_router
+from .payment.views import router as wallet_router
 from .market.views import router as market_router
 from .group.views import router as group_router
