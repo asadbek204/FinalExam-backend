@@ -29,12 +29,11 @@ class User(BaseModel):
     token_id: Mapped[Token] = mapped_column(ForeignKey("tokens.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[auto_utcnow]
 
+    is_online: Mapped[bool_default_false]
     is_anonymous: Mapped[bool] = mapped_column(default=True)
     is_bot: Mapped[bool_default_false]
-    is_online: Mapped[bool_default_false]
     is_active: Mapped[bool_default_false]
     is_superuser: Mapped[bool_default_false]
-    is_verified: Mapped[bool_default_false]
 
     def __repr__(self) -> str:
         return super().__repr__()[:-2] + f", username: {self.username})>"
@@ -78,14 +77,16 @@ class UserAvatar(AvatarBaseABS):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
 
-class UserStories(UserProperties):
-    __tablename__ = "user_stories"
+class UserPublish(UserProperties):
+    __abstract__ = True
 
     media_id: Mapped[int] = mapped_column(ForeignKey(Media.id, ondelete="CASCADE"))
     created_at: Mapped[auto_utcnow]
 
 
-class UserMoments(UserProperties):
-    __tablename__ = "user_moments"
+class UserStories(UserPublish):
+    __tablename__ = "user_stories"
 
-    media_id: Mapped[int] = mapped_column(ForeignKey(Media.id, ondelete="CASCADE"))
+
+class UserMoments(UserPublish):
+    __tablename__ = "user_moments"
