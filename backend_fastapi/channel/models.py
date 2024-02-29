@@ -2,17 +2,17 @@ from sqlalchemy import ForeignKey, String
 from backend_fastapi.database.field_types import str_512, auto_utcnow, name, updated_at, int_pk
 from sqlalchemy.orm import Mapped, mapped_column
 from backend_fastapi.auth.models import User
-from backend_fastapi.database.models import AvatarBase, BaseModel, AbstractConcreteBase, Chat, Base
+from backend_fastapi.database.models import AvatarBaseABS, BaseModel, AbstractConcreteBase, ChatABS, Base
 from backend_fastapi.group.models import Group
 
 
-class Channel(Chat):
+class Channel(ChatABS):
     __tablename__ = "channels"
 
     chat_group_id: Mapped[int] = mapped_column(ForeignKey(Group.id, ondelete="SET NULL"), nullable=True)
 
 
-class ChannelAvatar(AvatarBase):
+class ChannelAvatar(AvatarBaseABS):
     __tablename__ = "channels_avatars"
 
     channel_id: Mapped[int] = mapped_column(ForeignKey(Channel.id, ondelete="CASCADE"))

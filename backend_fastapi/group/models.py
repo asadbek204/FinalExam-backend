@@ -1,15 +1,15 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
-from backend_fastapi.database.models import BaseModel, AvatarBase, Chat
+from backend_fastapi.database.models import BaseModel, AvatarBaseABS, ChatABS
 from backend_fastapi.database.field_types import auto_utcnow
 from backend_fastapi.auth.models import User
 
 
-class Group(Chat):
+class Group(ChatABS):
     __tablename__ = "groups"
 
 
-class GroupAvatar(AvatarBase):
+class GroupAvatar(AvatarBaseABS):
     __tablename__ = "group_avatars"
 
     author_id: Mapped[int] = mapped_column(ForeignKey(User.id, ondelete="SET NULL"), nullable=True)

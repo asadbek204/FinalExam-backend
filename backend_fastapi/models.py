@@ -3,7 +3,6 @@ from .channel.models import *
 from .chat.models import *
 from .database.models import *
 from .game.models import *
-from .history.models import *
 from .home.models import *
 from .live.models import *
 from .profile.models import *

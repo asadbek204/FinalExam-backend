@@ -8,6 +8,10 @@ from settings import settings
 
 
 class BaseModel(AbstractConcreteBase, Base):
+    """
+    - id : primary key for all nested models
+    - __repr__ : base implementation for describing models
+    """
     __abstract__ = True
 
     id: Mapped[int_pk]
@@ -16,56 +20,76 @@ class BaseModel(AbstractConcreteBase, Base):
         return f"<{self.__tablename__} (id={self.id})>"
 
 
-class DocumentBase(AbstractConcreteBase, Base):
+class FileABS(AbstractConcreteBase, Base):
     """
     Base class for all documents:
     - name : name of the file
     - path : path to the file
+    - caption : message to attach to the file
     """
     __abstract__ = True
 
     id: Mapped[int_pk]
     name: Mapped[str_64]
     path: Mapped[str]
+    caption: Mapped[str] = mapped_column(String(2048))
 
     @property
     def url(self) -> str:
+        """
+        :return: url of file for frontend
+        """
         return f"{settings.server.url}/{self.path}/{self.name}"
 
     def __repr__(self) -> str:
         return super().__repr__()[:-2] + f", name: {self.name})>"
 
 
-class Document(DocumentBase):
+class Document(FileABS):
     """
-    Represents a single document in the database
+    - Represents a single document in the database
     - type : document type
     - size : document size in bytes
     - caption : caption of the document
+    - type : type of the file
     """
     __tablename__ = "documents"
 
     type: Mapped[str] = mapped_column(String(10))
     size: Mapped[float]
-    caption: Mapped[str] = mapped_column(String(2048))
 
 
-class MediaType(Enum):
-    png: str = 'png'
-    jpg: str = 'jpg'
-    jpeg: str = 'jpeg'
-    svg: str = 'svg'
-    gif: str = 'gif'
+class MediaTypes(Enum):
+    """
+    Enumeration of available media types
+    """
+    jpeg = "image/jpeg"
+    jpg = "image/jpg"
+    png = "image/png"
+    gif = "image/gif"
+    tiff = "image/tiff"
+    webp = "image/webp"
+    mp3 = "audio/mp3"
+    mp4 = "video/mp4"
+    webm = "video/webm"
+    ogg = "video/ogg"
+    mpeg = "video/mpeg"
+    mov = "video/mov"
 
 
-class Media(DocumentBase):
+class Media(FileABS):
+    """
+    Represents a single media file in the database
+    """
     __tablename__ = "medias"
 
-    type: Mapped[MediaType]
-    caption: Mapped[str] = mapped_column(String(2048))
+    type: Mapped[MediaTypes]
 
 
-class AvatarBase(AbstractConcreteBase, Base):
+class AvatarBaseABS(AbstractConcreteBase, Base):
+    """
+    Base abstract class for all avatar files
+    """
     __abstract__ = True
 
     id: Mapped[int_pk]
@@ -76,6 +100,9 @@ class AvatarBase(AbstractConcreteBase, Base):
 
 
 class MediaGroup(BaseModel):
+    """
+    Represents a group of medias in the database
+    """
     __tablename__ = "media_groups"
 
     created_at: Mapped[auto_utcnow]
@@ -83,6 +110,9 @@ class MediaGroup(BaseModel):
 
 
 class MediaGroupMedia(BaseModel):
+    """
+    Represents a single media from a group of medias
+    """
     __tablename__ = "media_group_medias"
 
     group_id: Mapped[int] = mapped_column(ForeignKey(MediaGroup.id, ondelete="CASCADE"))
@@ -91,7 +121,7 @@ class MediaGroupMedia(BaseModel):
 
 class MessageBase(BaseModel):
     """
-    Base class for all messages:
+    - Base abstract class for all messages:
     - child classes must implement the chat_id property
     - media_id property is for make a caption for sent media
     """
@@ -104,10 +134,12 @@ class MessageBase(BaseModel):
     forward_from: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=True, default=None)
 
 
-class Chat(AbstractConcreteBase, Base):
+class ChatABS(BaseModel):
+    """
+    Base abstract class for all chats
+    """
     __abstract__ = True
 
-    id: Mapped[int_pk]
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     name: Mapped[name]
     short_description: Mapped[str_256]

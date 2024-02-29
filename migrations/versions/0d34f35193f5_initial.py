@@ -1,8 +1,8 @@
 """Initial
 
-Revision ID: 9d67912e586f
+Revision ID: 0d34f35193f5
 Revises: 
-Create Date: 2024-02-29 15:17:24.113503
+Create Date: 2024-02-29 17:04:50.943165
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '9d67912e586f'
+revision: str = '0d34f35193f5'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -23,10 +23,10 @@ def upgrade() -> None:
     op.create_table('documents',
     sa.Column('type', sa.String(length=10), nullable=False),
     sa.Column('size', sa.Float(), nullable=False),
-    sa.Column('caption', sa.String(length=2048), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('path', sa.String(), nullable=False),
+    sa.Column('caption', sa.String(length=2048), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('media_groups',
@@ -36,17 +36,11 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('medias',
-    sa.Column('type', sa.Enum('png', 'jpg', 'jpeg', 'svg', 'gif', name='mediatype'), nullable=False),
-    sa.Column('caption', sa.String(length=2048), nullable=False),
+    sa.Column('type', sa.Enum('jpeg', 'jpg', 'png', 'gif', 'tiff', 'webp', 'mp3', 'mp4', 'webm', 'ogg', 'mpeg', 'mov', name='mediatypes'), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('path', sa.String(), nullable=False),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('permissions',
-    sa.Column('title', sa.String(), nullable=True),
-    sa.Column('description', sa.String(), nullable=False),
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('caption', sa.String(length=2048), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('tokens',
@@ -94,8 +88,15 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('groups',
+    op.create_table('contacts',
+    sa.Column('friend_id', sa.Integer(), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.ForeignKeyConstraint(['friend_id'], ['users.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('groups',
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('name', sa.String(), nullable=True),
     sa.Column('short_description', sa.String(), nullable=False),
@@ -103,6 +104,7 @@ def upgrade() -> None:
     sa.Column('username', sa.String(length=32), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('password', sa.String(), nullable=False),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('username')
@@ -118,6 +120,14 @@ def upgrade() -> None:
     sa.UniqueConstraint('id'),
     sa.UniqueConstraint('name')
     )
+    op.create_table('permissions',
+    sa.Column('title', sa.String(), nullable=True),
+    sa.Column('description', sa.String(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('sessions',
     sa.Column('token_id', sa.Integer(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -130,6 +140,23 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('user_moments',
+    sa.Column('media_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.ForeignKeyConstraint(['media_id'], ['medias.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('user_stories',
+    sa.Column('media_id', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.ForeignKeyConstraint(['media_id'], ['medias.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('users_avatars',
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -138,18 +165,8 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('users_permissions',
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('permission_id', sa.Integer(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.ForeignKeyConstraint(['permission_id'], ['permissions.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
-    )
     op.create_table('channels',
     sa.Column('chat_group_id', sa.Integer(), nullable=True),
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('name', sa.String(), nullable=True),
     sa.Column('short_description', sa.String(), nullable=False),
@@ -157,6 +174,7 @@ def upgrade() -> None:
     sa.Column('username', sa.String(length=32), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('password', sa.String(), nullable=False),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.ForeignKeyConstraint(['chat_group_id'], ['groups.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id'),
@@ -200,6 +218,15 @@ def upgrade() -> None:
     sa.Column('tagged_group_id', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.ForeignKeyConstraint(['tagged_group_id'], ['groups.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('users_permissions',
+    sa.Column('permission_id', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.ForeignKeyConstraint(['permission_id'], ['permissions.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('channels_avatars',
@@ -277,21 +304,24 @@ def downgrade() -> None:
     op.drop_table('subscribers')
     op.drop_table('posts')
     op.drop_table('channels_avatars')
+    op.drop_table('users_permissions')
     op.drop_table('tagged_groups')
     op.drop_table('group_members')
     op.drop_table('group_avatars')
     op.drop_table('chat_messages')
     op.drop_table('channels')
-    op.drop_table('users_permissions')
     op.drop_table('users_avatars')
+    op.drop_table('user_stories')
+    op.drop_table('user_moments')
     op.drop_table('sessions')
+    op.drop_table('permissions')
     op.drop_table('payment')
     op.drop_table('groups')
+    op.drop_table('contacts')
     op.drop_table('chat')
     op.drop_table('users')
     op.drop_table('media_group_medias')
     op.drop_table('tokens')
-    op.drop_table('permissions')
     op.drop_table('medias')
     op.drop_table('media_groups')
     op.drop_table('documents')

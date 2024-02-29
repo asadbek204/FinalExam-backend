@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import ForeignKey, String
 from backend_fastapi.database.field_types import str_256, auto_utcnow, bool_default_false, username, name, str_512
 from sqlalchemy.orm import Mapped, mapped_column
-from backend_fastapi.database.models import AvatarBase, BaseModel
+from backend_fastapi.database.models import AvatarBaseABS, BaseModel, Media
 
 
 class Token(BaseModel):
@@ -40,12 +40,22 @@ class User(BaseModel):
         return super().__repr__()[:-2] + f", username: {self.username})>"
 
 
-class UserAvatar(AvatarBase):
-    __tablename__ = "users_avatars"
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+class UserProperties(BaseModel):
+    __abstract__ = True
+
+    user_id: Mapped[int] = mapped_column(ForeignKey(User.id, ondelete="CASCADE"))
+
+    def __repr__(self):
+        return "UserProperty: " + super().__repr__()[:-2] + f", user_id: {self.user_id}))>"
 
 
-class Permission(BaseModel):
+class Contacts(UserProperties):
+    __tablename__ = "contacts"
+
+    friend_id: Mapped[int] = mapped_column(ForeignKey(User.id, ondelete="CASCADE"), nullable=True, default=None)
+
+
+class UserPermission(UserProperties):
     __tablename__ = "permissions"
 
     title: Mapped[name]
@@ -55,8 +65,27 @@ class Permission(BaseModel):
         return super().__repr__()[:-2] + f", title: {self.title})>"
 
 
-class UsersPermissions(BaseModel):
+class UsersPermissions(UserProperties):
     __tablename__ = "users_permissions"
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+
     permission_id: Mapped[int] = mapped_column(ForeignKey("permissions.id", ondelete="CASCADE"))
     created_at: Mapped[auto_utcnow]
+
+
+class UserAvatar(AvatarBaseABS):
+    __tablename__ = "users_avatars"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+
+
+class UserStories(UserProperties):
+    __tablename__ = "user_stories"
+
+    media_id: Mapped[int] = mapped_column(ForeignKey(Media.id, ondelete="CASCADE"))
+    created_at: Mapped[auto_utcnow]
+
+
+class UserMoments(UserProperties):
+    __tablename__ = "user_moments"
+
+    media_id: Mapped[int] = mapped_column(ForeignKey(Media.id, ondelete="CASCADE"))
