@@ -18,7 +18,7 @@ class ChannelAvatar(AvatarBaseABS):
     channel_id: Mapped[int] = mapped_column(ForeignKey(Channel.id, ondelete="CASCADE"))
 
 
-class Subscribers(BaseModel):
+class Subscriber(BaseModel):
     __tablename__ = "subscribers"
 
     user_id: Mapped[int] = mapped_column(ForeignKey(User.id, ondelete="CASCADE"))
@@ -52,25 +52,25 @@ class Tag(TagBase):
     __tablename__ = "tags"
 
 
-class TaggedUsers(TagBase):
+class TaggedUser(TagBase):
     __tablename__ = "tagged_users"
 
     tagged_user_id: Mapped[int] = mapped_column(ForeignKey(User.id, ondelete="CASCADE"))
 
 
-class TaggedPosts(BaseModel):
+class TaggedPost(BaseModel):
     __tablename__ = "tagged_posts"
 
     tagged_post_id: Mapped[int] = mapped_column(ForeignKey(Post.id, ondelete="CASCADE"))
 
 
-class TaggedChannels(BaseModel):
+class TaggedChannel(BaseModel):
     __tablename__ = "tagged_channels"
 
     tagged_channel_id: Mapped[int] = mapped_column(ForeignKey(Channel.id, ondelete="CASCADE"))
 
 
-class TaggedGroups(BaseModel):
+class TaggedGroup(BaseModel):
     __tablename__ = "tagged_groups"
 
     tagged_group_id: Mapped[int] = mapped_column(ForeignKey(Group.id, ondelete="CASCADE"))

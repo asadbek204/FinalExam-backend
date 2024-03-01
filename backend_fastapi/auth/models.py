@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import Never
+from _sha256 import sha256
 from sqlalchemy import ForeignKey, String
 from backend_fastapi.database.field_types import str_256, auto_utcnow, bool_default_false, username, name, str_512
 from sqlalchemy.orm import Mapped, mapped_column
@@ -35,6 +37,27 @@ class User(BaseModel):
     is_active: Mapped[bool_default_false]
     is_superuser: Mapped[bool_default_false]
 
+    @property
+    def pwd(self) -> Never:
+        """
+        :return: not implemented because nobody can get a password
+        """
+        raise NotImplemented("nobody can get a password")
+
+    @pwd.setter
+    def pwd(self, value: str) -> None:
+        """
+        :param value: str value for hashing and changing password
+        """
+        if not isinstance(value, str):
+            raise TypeError(f"type of pwd must be a string, not {type(value)}")
+        if len(value) < 8:
+            raise ValueError(f"value must be at least 8 characters, not {len(value)}")
+        self.password = sha256(value).hexdigest()
+
+    def verify_password(self, password: str) -> bool:
+        return self.password == sha256(password).hexdigest()
+
     def __repr__(self) -> str:
         return super().__repr__()[:-2] + f", username: {self.username})>"
 
@@ -67,14 +90,14 @@ class UserPermission(UserProperties):
 class UsersPermissions(UserProperties):
     __tablename__ = "users_permissions"
 
-    permission_id: Mapped[int] = mapped_column(ForeignKey("permissions.id", ondelete="CASCADE"))
+    permission_id: Mapped[int] = mapped_column(ForeignKey(UserPermission.id, ondelete="CASCADE"))
     created_at: Mapped[auto_utcnow]
 
 
 class UserAvatar(AvatarBaseABS):
     __tablename__ = "users_avatars"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user_id: Mapped[int] = mapped_column(ForeignKey(User.id, ondelete="CASCADE"))
 
 
 class UserPublish(UserProperties):

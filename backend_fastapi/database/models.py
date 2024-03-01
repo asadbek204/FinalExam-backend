@@ -20,7 +20,7 @@ class BaseModel(AbstractConcreteBase, Base):
         return f"<{self.__tablename__} (id={self.id})>"
 
 
-class FileABS(AbstractConcreteBase, Base):
+class FileABC(AbstractConcreteBase, Base):
     """
     Base class for all documents:
     - name : name of the file
@@ -33,6 +33,7 @@ class FileABS(AbstractConcreteBase, Base):
     name: Mapped[str_64]
     path: Mapped[str]
     caption: Mapped[str] = mapped_column(String(2048))
+    size: Mapped[float]
 
     @property
     def url(self) -> str:
@@ -45,7 +46,7 @@ class FileABS(AbstractConcreteBase, Base):
         return super().__repr__()[:-2] + f", name: {self.name})>"
 
 
-class Document(FileABS):
+class Document(FileABC):
     """
     - Represents a single document in the database
     - type : document type
@@ -56,7 +57,6 @@ class Document(FileABS):
     __tablename__ = "documents"
 
     type: Mapped[str] = mapped_column(String(10))
-    size: Mapped[float]
 
 
 class MediaTypes(Enum):
@@ -77,7 +77,7 @@ class MediaTypes(Enum):
     mov = "video/mov"
 
 
-class Media(FileABS):
+class Media(FileABC):
     """
     Represents a single media file in the database
     """
@@ -147,6 +147,7 @@ class ChatABS(BaseModel):
     username: Mapped[username]
     created_at: Mapped[auto_utcnow]
     password: Mapped[str_256]
+    price: Mapped[int]
 
     def __repr__(self) -> str:
         return f"<Chat (id: {self.id}, name: {self.name})>"
