@@ -1,3 +1,4 @@
+import typing
 from datetime import datetime
 from pydantic import BaseModel
 from .models import MediaTypes
@@ -20,22 +21,24 @@ class Media(File):
     type: MediaTypes
 
 
-class AvatarBase(BaseModel):
+class Avatar(BaseModel):
     id: int
     image: Media
 
 
+class MediaList(BaseModel):
+    prev: typing.Optional["MediaList"]
+    current: Media
+    next: typing.Optional["MediaList"]
+
+
 class MediaGroup(BaseModel):
+    media_list: MediaList
     created_at: datetime
     edited_at: datetime
 
 
-class MediaGroupMedia(BaseModel):
-    group: MediaGroup
-    media: Media
-
-
-class MessageBase(BaseModel):
+class Message(BaseModel):
     text: str
     media_group: MediaGroup
     created_at: datetime
@@ -51,4 +54,3 @@ class ChatBase(BaseModel):
     username: str
     created_at: datetime
     password: str
-    price: int

@@ -10,3 +10,4 @@ from .search.models import *
 from .payment.models import *
 from .market.models import *
 from .group.models import *
+from .bot.models import *

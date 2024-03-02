@@ -32,7 +32,6 @@ class FileABC(AbstractConcreteBase, Base):
     id: Mapped[int_pk]
     name: Mapped[str_64]
     path: Mapped[str]
-    caption: Mapped[str] = mapped_column(String(2048))
     size: Mapped[float]
 
     @property
@@ -57,6 +56,7 @@ class Document(FileABC):
     __tablename__ = "documents"
 
     type: Mapped[str] = mapped_column(String(10))
+    caption: Mapped[str] = mapped_column(String(2048))
 
 
 class MediaTypes(Enum):
@@ -86,17 +86,47 @@ class Media(FileABC):
     type: Mapped[MediaTypes]
 
 
-class AvatarBaseABS(AbstractConcreteBase, Base):
+class Avatar(BaseModel):
     """
     Base abstract class for all avatar files
     """
-    __abstract__ = True
+    __tablename__ = "avatars"
 
-    id: Mapped[int_pk]
     image_id: Mapped[int] = mapped_column(ForeignKey(Media.id, ondelete="CASCADE"))
 
     def __repr__(self) -> str:
         return super().__repr__()[:-2] + f", image_id: {self.image_id})>"
+
+
+def node(model_name: str) -> type:
+    return typing.Annotated[
+        int,
+        mapped_column(
+            ForeignKey(
+                f"{model_name}.id",
+                ondelete="RESTRICT"
+            ),
+            default=None,
+            nullable=True
+        )
+    ]
+
+
+class NodeListModel(BaseModel):
+    __abstract__ = True
+
+    prev_id: Mapped[int | None]
+    current_id: Mapped[int]
+    next_id: Mapped[int | None]
+
+
+class MediaList(NodeListModel):
+    __tablename__ = "media_list"
+    __type_of_node__ = Media
+
+    prev_id: Mapped[node("media_list")]
+    current_id: Mapped[int] = mapped_column(ForeignKey(Media.id, ondelete="RESTRICT"))
+    next_id: Mapped[node("media_list")]
 
 
 class MediaGroup(BaseModel):
@@ -105,27 +135,16 @@ class MediaGroup(BaseModel):
     """
     __tablename__ = "media_groups"
 
+    media_list: Mapped[int] = mapped_column(ForeignKey(MediaList.id, ondelete="CASCADE"))
     created_at: Mapped[auto_utcnow]
     edited_at: Mapped[updated_at]
 
 
-class MediaGroupMedia(BaseModel):
+class Message(BaseModel):
     """
-    Represents a single media from a group of medias
+    - media_group_id property is for make a caption for sent media(s)
     """
-    __tablename__ = "media_group_medias"
-
-    group_id: Mapped[int] = mapped_column(ForeignKey(MediaGroup.id, ondelete="CASCADE"))
-    media_id: Mapped[int] = mapped_column(ForeignKey(Media.id, ondelete="CASCADE"))
-
-
-class MessageBase(BaseModel):
-    """
-    - Base abstract class for all messages:
-    - child classes must implement the chat_id property
-    - media_id property is for make a caption for sent media
-    """
-    __abstract__ = True
+    __tablename__ = "messages"
 
     text: Mapped[str_512]
     media_group_id: Mapped[int] = mapped_column(ForeignKey(MediaGroup.id, ondelete="CASCADE"), nullable=True, default=None)
@@ -140,14 +159,13 @@ class ChatABS(BaseModel):
     """
     __abstract__ = True
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     name: Mapped[name]
     short_description: Mapped[str_256]
     description: Mapped[str_512]
     username: Mapped[username]
     created_at: Mapped[auto_utcnow]
     password: Mapped[str_256]
-    price: Mapped[int]
 
     def __repr__(self) -> str:
         return f"<Chat (id: {self.id}, name: {self.name})>"

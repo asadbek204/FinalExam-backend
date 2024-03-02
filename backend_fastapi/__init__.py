@@ -9,3 +9,4 @@ from .search.views import router as search_router
 from .payment.views import router as wallet_router
 from .market.views import router as market_router
 from .group.views import router as group_router
+from .bot.views import router as bot_router

@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 from backend_fastapi.auth.models import User
-from backend_fastapi.database.models import BaseModel, Base
+from backend_fastapi.database.models import BaseModel, Base, Message
 from backend_fastapi.database.field_types import auto_utcnow
 
 
@@ -33,3 +33,9 @@ class Donate(BaseModel):
     description: Mapped[str] = mapped_column(String(128))
     amount: Mapped[int]
     created_at: Mapped[auto_utcnow]
+
+
+class StreamComments(Message):
+    __tablename__ = "stream_comments"
+
+    stream_id: Mapped[int] = mapped_column(ForeignKey(LiveStream.id, ondelete="CASCADE"))

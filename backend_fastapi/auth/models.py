@@ -4,7 +4,7 @@ from _sha256 import sha256
 from sqlalchemy import ForeignKey, String
 from backend_fastapi.database.field_types import str_256, auto_utcnow, bool_default_false, username, name, str_512
 from sqlalchemy.orm import Mapped, mapped_column
-from backend_fastapi.database.models import AvatarBaseABS, BaseModel, Media
+from backend_fastapi.database.models import Avatar, BaseModel, Media
 
 
 class Token(BaseModel):
@@ -19,21 +19,25 @@ class Token(BaseModel):
         return super().__repr__()[:-2] + f", blacklisted: {self.blacklisted})>"
 
 
-class User(BaseModel):
-    __tablename__ = "users"
+class AbstractUser(BaseModel):
+    __abstract__ = True
 
     username: Mapped[username]
     first_name: Mapped[name]
     last_name: Mapped[name]
     bio: Mapped[str_512]
-    password: Mapped[str_256]
-    phone_number: Mapped[str] = mapped_column(String(15))
     token_id: Mapped[Token] = mapped_column(ForeignKey("tokens.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[auto_utcnow]
+    is_bot: Mapped[bool_default_false]
 
+
+class User(AbstractUser):
+    __tablename__ = "users"
+
+    password: Mapped[str_256]
+    phone_number: Mapped[str] = mapped_column(String(15))
     is_online: Mapped[bool_default_false]
     is_anonymous: Mapped[bool] = mapped_column(default=True)
-    is_bot: Mapped[bool_default_false]
     is_active: Mapped[bool_default_false]
     is_superuser: Mapped[bool_default_false]
 
@@ -94,10 +98,10 @@ class UsersPermissions(UserProperties):
     created_at: Mapped[auto_utcnow]
 
 
-class UserAvatar(AvatarBaseABS):
+class UserAvatar(UserProperties):
     __tablename__ = "users_avatars"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey(User.id, ondelete="CASCADE"))
+    avatar_id: Mapped[int] = mapped_column(ForeignKey(Avatar.id, ondelete="CASCADE"))
 
 
 class UserPublish(UserProperties):

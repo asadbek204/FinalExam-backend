@@ -13,18 +13,12 @@ class UserBase(BaseModel):
 class UserIn(UserBase):
     password: str
 
-    class Config:
-        schema_extra = {}
-
 
 class UserOut(UserBase):
     created_at: datetime | None
     is_active: bool
     is_online: bool
     is_bot: bool
-
-    class Config:
-        schema_extra = {}
 
 
 class Token(BaseModel):

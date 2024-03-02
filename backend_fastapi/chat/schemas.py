@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from backend_fastapi.auth.schemas import User
-from backend_fastapi.database.schemas import MessageBase
+from backend_fastapi.database.schemas import Message
 
 
 class PersonalChat(BaseModel):
@@ -9,5 +9,6 @@ class PersonalChat(BaseModel):
     blocked: bool = False
 
 
-class ChatMessage(MessageBase):
+class ChatMessage(BaseModel):
     chat: PersonalChat
+    message: Message
